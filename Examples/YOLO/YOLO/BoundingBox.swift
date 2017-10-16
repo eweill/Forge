@@ -8,7 +8,8 @@ class BoundingBox {
   init() {
     shapeLayer = CAShapeLayer()
     shapeLayer.fillColor = UIColor.clear.cgColor
-    shapeLayer.lineWidth = 4
+    //shapeLayer.lineWidth = 4
+    shapeLayer.lineWidth = 3
     shapeLayer.isHidden = true
 
     textLayer = CATextLayer()

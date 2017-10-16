@@ -1,7 +1,8 @@
 import MetalPerformanceShaders
 import Forge
 
-let anchors: [Float] = [1.08, 1.19, 3.42, 4.41, 6.63, 11.38, 9.42, 5.11, 16.62, 10.52]
+//let anchors: [Float] = [1.08, 1.19, 3.42, 4.41, 6.63, 11.38, 9.42, 5.11, 16.62, 10.52]
+let anchors: [Float] = [0.738768,0.874946,  2.42204,2.65704,  4.30971,7.04493,  10.246,4.59428,  12.6868,11.8741]
 
 /*
   The tiny-yolo-voc network from YOLOv2. https://pjreddie.com/darknet/yolo/
@@ -20,7 +21,7 @@ class YOLO: NeuralNetwork {
   public static let maxBoundingBoxes = 10
 
   // Tweak these values to get more or fewer predictions.
-  let confidenceThreshold: Float = 0.3
+  let confidenceThreshold: Float = 0.1
   let iouThreshold: Float = 0.5
 
   struct Prediction {
@@ -41,23 +42,41 @@ class YOLO: NeuralNetwork {
 
     let input = Input()
 
+    //let output = input
+    //         --> Resize(width: YOLO.inputWidth, height: YOLO.inputHeight)
+    //         --> Convolution(kernel: (3, 3), channels: 16, activation: leaky, name: "conv1")
+    //         --> MaxPooling(kernel: (2, 2), stride: (2, 2))
+    //         --> Convolution(kernel: (3, 3), channels: 32, activation: leaky, name: "conv2")
+    //         --> MaxPooling(kernel: (2, 2), stride: (2, 2))
+    //         --> Convolution(kernel: (3, 3), channels: 64, activation: leaky, name: "conv3")
+    //         --> MaxPooling(kernel: (2, 2), stride: (2, 2))
+    //         --> Convolution(kernel: (3, 3), channels: 128, activation: leaky, name: "conv4")
+    //         --> MaxPooling(kernel: (2, 2), stride: (2, 2))
+    //         --> Convolution(kernel: (3, 3), channels: 256, activation: leaky, name: "conv5")
+    //         --> MaxPooling(kernel: (2, 2), stride: (2, 2))
+    //         --> Convolution(kernel: (3, 3), channels: 512, activation: leaky, name: "conv6")
+    //         --> MaxPooling(kernel: (2, 2), stride: (1, 1), padding: .same)
+    //         --> Convolution(kernel: (3, 3), channels: 1024, activation: leaky, name: "conv7")
+    //         --> Convolution(kernel: (3, 3), channels: 1024, activation: leaky, name: "conv8")
+    //         --> Convolution(kernel: (1, 1), channels: 125, activation: nil, name: "conv9")
+
     let output = input
-             --> Resize(width: YOLO.inputWidth, height: YOLO.inputHeight)
-             --> Convolution(kernel: (3, 3), channels: 16, activation: leaky, name: "conv1")
+             --> Resize(width: 416, height: 416)
+             --> Convolution(kernel: (3, 3), channels: 16, padding: true, activation: leaky, name: "conv1")
              --> MaxPooling(kernel: (2, 2), stride: (2, 2))
-             --> Convolution(kernel: (3, 3), channels: 32, activation: leaky, name: "conv2")
+             --> Convolution(kernel: (3, 3), channels: 32, padding: true, activation: leaky, name: "conv2")
              --> MaxPooling(kernel: (2, 2), stride: (2, 2))
-             --> Convolution(kernel: (3, 3), channels: 64, activation: leaky, name: "conv3")
+             --> Convolution(kernel: (3, 3), channels: 64, padding: true, activation: leaky, name: "conv3")
              --> MaxPooling(kernel: (2, 2), stride: (2, 2))
-             --> Convolution(kernel: (3, 3), channels: 128, activation: leaky, name: "conv4")
+             --> Convolution(kernel: (3, 3), channels: 128, padding: true, activation: leaky, name: "conv4")
              --> MaxPooling(kernel: (2, 2), stride: (2, 2))
-             --> Convolution(kernel: (3, 3), channels: 256, activation: leaky, name: "conv5")
+             --> Convolution(kernel: (3, 3), channels: 256, padding: true, activation: leaky, name: "conv5")
              --> MaxPooling(kernel: (2, 2), stride: (2, 2))
-             --> Convolution(kernel: (3, 3), channels: 512, activation: leaky, name: "conv6")
-             --> MaxPooling(kernel: (2, 2), stride: (1, 1), padding: .same)
-             --> Convolution(kernel: (3, 3), channels: 1024, activation: leaky, name: "conv7")
-             --> Convolution(kernel: (3, 3), channels: 1024, activation: leaky, name: "conv8")
-             --> Convolution(kernel: (1, 1), channels: 125, activation: nil, name: "conv9")
+             --> Convolution(kernel: (3, 3), channels: 512, padding: true, activation: leaky, name: "conv6")
+             --> MaxPooling(kernel: (2, 2), stride: (1, 1), padding: true)
+             --> Convolution(kernel: (3, 3), channels: 1024, padding: true, activation: leaky, name: "conv7")
+             --> Convolution(kernel: (3, 3), channels: 1024, padding: true, activation: leaky, name: "conv8")
+             --> Convolution(kernel: (1, 1), channels: 30, padding: true, activation: nil, name: "conv9")
 
     model = Model(input: input, output: output)
 
@@ -80,7 +99,8 @@ class YOLO: NeuralNetwork {
   public func fetchResult(inflightIndex: Int) -> NeuralNetworkResult<Prediction> {
     let featuresImage = model.outputImage(inflightIndex: inflightIndex)
     let features = featuresImage.toFloatArray()
-    assert(features.count == 13*13*128)
+    //assert(features.count == 13*13*128)
+    assert(features.count == 13*13*32)
 
     // We only run the convolutional part of YOLO on the GPU. The last part of
     // the process is done on the CPU. It should be possible to do this on the
@@ -92,7 +112,8 @@ class YOLO: NeuralNetwork {
     let gridHeight = 13
     let gridWidth = 13
     let boxesPerCell = 5
-    let numClasses = 20
+    // let numClasses = 20
+    let numClasses = 1
 
     // This helper function finds the offset in the features array for a given
     // channel for a particular pixel. (See the comment below.)

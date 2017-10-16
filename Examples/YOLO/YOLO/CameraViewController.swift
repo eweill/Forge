@@ -8,10 +8,13 @@ import Forge
 let MaxBuffersInFlight = 3   // use triple buffering
 
 // The labels for the 20 classes.
+//let labels = [
+//  "aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat",
+//  "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person",
+//  "pottedplant", "sheep", "sofa", "train", "tvmonitor"
+//]
 let labels = [
-  "aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat",
-  "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person",
-  "pottedplant", "sheep", "sofa", "train", "tvmonitor"
+  "Label"
 ]
 
 class CameraViewController: UIViewController {
@@ -52,14 +55,16 @@ class CameraViewController: UIViewController {
 
     // Make colors for the bounding boxes. There is one color for each class,
     // 20 classes in total.
-    for r: CGFloat in [0.2, 0.4, 0.6, 0.8, 1.0] {
-      for g: CGFloat in [0.3, 0.7] {
-        for b: CGFloat in [0.4, 0.8] {
-          let color = UIColor(red: r, green: g, blue: b, alpha: 1)
-          colors.append(color)
-        }
-      }
-    }
+    //for r: CGFloat in [0.2, 0.4, 0.6, 0.8, 1.0] {
+    //  for g: CGFloat in [0.3, 0.7] {
+    //    for b: CGFloat in [0.4, 0.8] {
+    //      let color = UIColor(red: r, green: g, blue: b, alpha: 1)
+    //      colors.append(color)
+    //    }
+    //  }
+    //}
+    let color = UIColor(red: CGFloat(1.0), green: CGFloat(0.5), blue: CGFloat(0.5), alpha: 1)
+    colors.append(color)
 
     videoCapture = VideoCapture(device: device)
     videoCapture.delegate = self
@@ -167,8 +172,10 @@ class CameraViewController: UIViewController {
         // and bottom.
         let width = view.bounds.width
         let height = width * 4 / 3
-        let scaleX = width / CGFloat(YOLO.inputWidth)
-        let scaleY = height / CGFloat(YOLO.inputHeight)
+        //let scaleX = width / CGFloat(YOLO.inputWidth)
+        //let scaleY = height / CGFloat(YOLO.inputHeight)
+        let scaleX = width / 416
+        let scaleY = height / 416
         let top = (view.bounds.height - height) / 2
 
         // Translate and scale the rectangle to our own coordinate system.
