@@ -1,7 +1,6 @@
 [submodule "convert-datasets"]
 	path = convert-datasets
-	url = https://github.com/eweill/convert-datasets
-
+	url = https://github.com/eweill/convert-datasets.git
 [submodule "YAD2K"]
 	path = YAD2K
-	url = https://github.com/allanzelener/YAD2K
+	url = https://github.com/allanzelener/YAD2K.git
